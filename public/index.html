@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puppeteer Multishot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            margin-bottom: 1em;
+            font-size: 1.5em;
+            color: #007acc;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 0.5em 2em;
+            border: none;
+            border-radius: 5px;
+            background: #007acc;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #005f99;
+        }
+        #result {
+            margin-top: 1em;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .loading {
+            display: none;
+            margin-top: 1em;
+            font-size: 1em;
+            color: #007acc;
+        }
+        .circle, .triangle, .rectangle {
+            position: absolute;
+            background: #007acc;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        .circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            top: -50px;
+            left: -50px;
+        }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 75px solid transparent;
+            border-right: 75px solid transparent;
+            border-bottom: 150px solid #007acc;
+            bottom: -75px;
+            right: -75px;
+            opacity: 0.2;
+        }
+        .rectangle {
+            width: 200px;
+            height: 100px;
+            bottom: -50px;
+            left: -50px;
+            transform: rotate(-45deg);
+            opacity: 0.15;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Puppeteer Multishot</h1>
+        <p>Get screenshots of a whole website just from the domain.</p>
+        <form id="screenshot-form">
+            <label for="url">Enter URL:</label>
+            <input type="text" id="url" name="url" required>
+            <button type="submit">Take Screenshot/s</button>
+        </form>
+        <div class="loading" id="loading">Processing...</div>
+        <div id="result"></div>
+        <div class="circle"></div>
+        <div class="triangle"></div>
+        <div class="rectangle"></div>
+    </div>
+
+    <script>
+        document.getElementById('screenshot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url').value;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+
+            resultDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/screenshot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+                if (data.success) {
+                    resultDiv.innerHTML = `<p>Screenshot saved: <a href="${data.path}" target="_blank">${data.path}</a></p>`;
+                } else {
+                    resultDiv.innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
